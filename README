@@ -1,3 +1,45 @@
 Sample code from "Basic blockchain programming", a developer-oriented series about Bitcoin.
 
 http://davidederosa.com/basic-blockchain-programming/
+
+
+1. how to solve compilation error: /usr/bin/ld: cannot find -lcrypto
+
+hopkin@ubuntu:~/workspace/basic-blockchain-programming$ ./test.sh ex-sample-nameex-sample-name.c:1:0: warning: ISO C forbids an empty translation unit [-Wpedantic]
+/usr/bin/ld: cannot find -lcrypto
+
+Solution: installing libssl-dev.
+  
+hopkin@ubuntu:~/workspace/basic-blockchain-programming$ sudo apt-get install libssl-dev
+
+
+2. compilation error
+
+hopkin@ubuntu:~/workspace/basic-blockchain-programming$ . all-tests.sh 
+=== ex-address ===
+
+/tmp/ccfAVqub.o: In function `bbp_sha256':
+ex-address.c:(.text+0x43c): undefined reference to `SHA256_Init'
+ex-address.c:(.text+0x459): undefined reference to `SHA256_Update'
+ex-address.c:(.text+0x46f): undefined reference to `SHA256_Final'
+
+Problem reason,wrong command line:
+gcc -ansi -Wall -Wno-deprecated-declarations -I $OPENSSL_INCLUDE -pedantic -lcrypto -o $1.out $1.c
+
+You make a very common beginners mistake... Putting the libraries you link with in the wrong place on the command line when you build.
+
+Dependencies are reversed on the command line, so something that depends on something else should actually be put before what it depends on on the command line.
+
+In your example, you have a source file main.cpp that depends on some set of libraries, then the source file should be before the libraries it depend on:
+
+$ g++ -o main main.cpp -lssl -lcrypto
+To be safe, always put libraries last, after any source or object files listed on the command line.
+
+solution: change the compilation to:
+
+gcc -o $1.out $1.c -ansi -Wall -Wno-deprecated-declarations -I $OPENSSL_INCLUDE -pedantic -lssl -lcrypto
+
+
+
+http://stackoverflow.com/questions/13784434/gcc-use-openssls-sha256-functions
+
